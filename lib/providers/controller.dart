@@ -9,7 +9,7 @@ class Controller extends ChangeNotifier {
   // String checkLine = 'false';
   String correctWord = "";
   int currentTile = 0;
-  bool checkLine = false;
+  bool checkLine = false,isBackEnter=false;
   int currentRow = 0;
   List<TileModel> tilesEntered = [];
   setCorrectWord({required String word}) => correctWord = word;
@@ -17,11 +17,14 @@ class Controller extends ChangeNotifier {
     if (value == "ENTER") {
       if (currentTile == 5 * (currentRow + 1)) {
         // currentRow++;
+        isBackEnter=true;
         checkWord();
       }
     } else if (value == 'BACK') {
       if (currentTile > 5 * (currentRow + 1) - 5) {
         currentTile--;
+        isBackEnter = true;
+
         tilesEntered.removeLast();
       }
     } else {
@@ -29,6 +32,8 @@ class Controller extends ChangeNotifier {
         tilesEntered.add(TileModel(
             letter: value, keyboardStates: KeyboardStates.notAnswered));
         currentTile++;
+        isBackEnter = false;
+
       }
     }
     // print('current tile $currentTile and $currentRow');
