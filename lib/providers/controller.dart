@@ -1,15 +1,18 @@
+import 'dart:ffi';
+
 import 'package:flutter/cupertino.dart';
 import 'package:nepali_wordel/constants/keybord_states.dart';
 import 'package:nepali_wordel/data/keys_maps.dart';
 import 'package:nepali_wordel/models/tile_model.dart';
 
 class Controller extends ChangeNotifier {
+  // String checkLine = 'false';
   String correctWord = "";
   int currentTile = 0;
+  bool checkLine = false;
   int currentRow = 0;
   List<TileModel> tilesEntered = [];
   setCorrectWord({required String word}) => correctWord = word;
-
   setKeyTapped({required String value}) {
     if (value == "ENTER") {
       if (currentTile == 5 * (currentRow + 1)) {
@@ -40,7 +43,6 @@ class Controller extends ChangeNotifier {
 
     String guessedWord = "";
 
-    
     for (var i = currentRow * 5; i < (currentRow * 5) + 5; i++) {
       guessed.add(tilesEntered[i].letter);
       print(tilesEntered[i].letter);
@@ -89,16 +91,17 @@ class Controller extends ChangeNotifier {
           }
         }
       }
+      for (var i = currentRow * 5; i < (currentRow * 5) + 5; i++) {
+        if (tilesEntered[i].keyboardStates == KeyboardStates.notAnswered) {
+          tilesEntered[i].keyboardStates = KeyboardStates.incorrect;
+          keysMap.update(
+              tilesEntered[i].letter, (value) => KeyboardStates.incorrect);
+        }
+      }
+      currentRow++;
     }
 
-    for (var i = currentRow * 5; i < (currentRow * 5) + 5; i++) {
-      if (tilesEntered[i].keyboardStates == KeyboardStates.notAnswered) {
-        tilesEntered[i].keyboardStates = KeyboardStates.incorrect;
-        keysMap.update(
-            tilesEntered[i].letter, (value) => KeyboardStates.incorrect);
-      }
-    }
-    currentRow++;
+    checkLine = true;
     notifyListeners();
   }
 }
