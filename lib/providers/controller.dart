@@ -1,6 +1,8 @@
 import 'dart:ffi';
 
 import 'package:flutter/cupertino.dart';
+import 'package:nepali_wordel/utils/calculate_chart_stats.dart';
+import 'package:nepali_wordel/utils/calculate_stats.dart';
 import 'package:nepali_wordel/constants/keybord_states.dart';
 import 'package:nepali_wordel/data/keys_maps.dart';
 import 'package:nepali_wordel/models/tile_model.dart';
@@ -9,7 +11,10 @@ class Controller extends ChangeNotifier {
   // String checkLine = 'false';
   String correctWord = "";
   int currentTile = 0;
-  bool checkLine = false,isBackEnter=false;
+  bool checkLine = false,
+      isBackEnter = false,
+      gameWon = false,
+      gameCompleted = false,notEnoughLetters = false;
   int currentRow = 0;
   List<TileModel> tilesEntered = [];
   setCorrectWord({required String word}) => correctWord = word;
@@ -17,10 +22,13 @@ class Controller extends ChangeNotifier {
     if (value == "ENTER") {
       if (currentTile == 5 * (currentRow + 1)) {
         // currentRow++;
-        isBackEnter=true;
+        isBackEnter = true;
         checkWord();
+      } else {
+        notEnoughLetters = true;
       }
     } else if (value == 'BACK') {
+      notEnoughLetters=false;
       if (currentTile > 5 * (currentRow + 1) - 5) {
         currentTile--;
         isBackEnter = true;
@@ -28,6 +36,8 @@ class Controller extends ChangeNotifier {
         tilesEntered.removeLast();
       }
     } else {
+      notEnoughLetters=false;
+
       if (currentTile < 5 * (currentRow + 1)) {
         tilesEntered.add(TileModel(
             letter: value, keyboardStates: KeyboardStates.notAnswered));
@@ -63,6 +73,8 @@ class Controller extends ChangeNotifier {
         tilesEntered[i].keyboardStates = KeyboardStates.correct;
         keysMap.update(
             tilesEntered[i].letter, (value) => KeyboardStates.correct);
+        gameWon = true;
+        gameCompleted = true;
         // print(tilesEntered[i].letter);
       }
       print('word guessed correct $guessedWord == $correctWord');
@@ -96,17 +108,38 @@ class Controller extends ChangeNotifier {
           }
         }
       }
-      for (var i = currentRow * 5; i < (currentRow * 5) + 5; i++) {
+      // for (var i = currentRow * 5; i < (currentRow * 5) + 5; i++) {
+      //   if (tilesEntered[i].keyboardStates == KeyboardStates.notAnswered) {
+      //     tilesEntered[i].keyboardStates = KeyboardStates.incorrect;
+      //     keysMap.update(
+      //         tilesEntered[i].letter, (value) => KeyboardStates.incorrect);
+      //   }
+      // }
+      for (int i = currentRow * 5; i < (currentRow * 5) + 5; i++) {
         if (tilesEntered[i].keyboardStates == KeyboardStates.notAnswered) {
           tilesEntered[i].keyboardStates = KeyboardStates.incorrect;
-          keysMap.update(
-              tilesEntered[i].letter, (value) => KeyboardStates.incorrect);
+
+          final results = keysMap.entries
+              .where((element) => element.key == tilesEntered[i].letter);
+          if (results.single.value == KeyboardStates.notAnswered) {
+            keysMap.update(
+                tilesEntered[i].letter, (value) => KeyboardStates.incorrect);
+          }
         }
       }
-      currentRow++;
     }
 
+    currentRow++;
     checkLine = true;
+    if (currentRow == 8) {
+      gameCompleted = true;
+    }
+    if (gameCompleted) {
+      calculateStats(gameWon: gameWon);
+      if (gameWon) {
+        setChartStats(currentRow: currentRow);
+      }
+    }
     notifyListeners();
   }
 }

@@ -20,8 +20,8 @@ class _BounceState extends State<Bounce> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
-    _animationController =
-        AnimationController(duration: Duration(milliseconds: 300), vsync: this);
+    _animationController = AnimationController(
+        duration: const Duration(milliseconds: 400), vsync: this);
     _animation = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.30), weight: 1),
       TweenSequenceItem(tween: Tween(begin: 1.30, end: 1.0), weight: 1)
@@ -39,8 +39,12 @@ class _BounceState extends State<Bounce> with SingleTickerProviderStateMixin {
   @override
   void didUpdateWidget(covariant Bounce oldWidget) {
     if (widget.animate) {
-      _animationController.reset();
-      _animationController.forward();
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        if (mounted) {
+          _animationController.reset();
+          _animationController.forward();
+        }
+      });
     }
     super.didUpdateWidget(oldWidget);
   }

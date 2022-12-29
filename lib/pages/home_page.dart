@@ -2,11 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:nepali_wordel/components/grid.dart';
+import 'package:nepali_wordel/components/stat_box.dart';
 import 'package:nepali_wordel/constants/worde.dart';
 import 'package:nepali_wordel/pages/settings.dart';
 import 'package:nepali_wordel/providers/controller.dart';
 import 'package:nepali_wordel/data/keys_maps.dart';
 import 'package:nepali_wordel/providers/theme_provider.dart';
+import 'package:nepali_wordel/utils/quick_box.dart';
 import 'package:provider/provider.dart';
 
 import '../components/keyboard_row.dart';
@@ -39,7 +41,40 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Wordel'),
         centerTitle: true,
         elevation: 0,
-         actions: [
+        actions: [
+          Consumer<Controller>(
+            builder: (_, notifier, __) {
+              if (notifier.notEnoughLetters) {
+                runQuickBox(context: context, message: 'Not Enough Letters');
+              }
+              if (notifier.gameCompleted) {
+                if (notifier.gameWon) {
+                  if (notifier.currentRow == 8) {
+                    runQuickBox(context: context, message: 'Phew!');
+                  } else {
+                    runQuickBox(context: context, message: 'Splendid!');
+                  }
+                } else {
+                  runQuickBox(context: context, message: notifier.correctWord);
+                }
+                Future.delayed(
+                  const Duration(milliseconds: 4000),
+                  () {
+                    if (mounted) {
+                      showDialog(
+                          context: context, builder: (_) => const StatBox());
+                    }
+                  },
+                );
+              }
+              return IconButton(
+                  onPressed: () async {
+                    showDialog(
+                        context: context, builder: (_) => const StatBox());
+                  },
+                  icon: const Icon(Icons.bar_chart_outlined));
+            },
+          ),
           IconButton(
               onPressed: () {
                 // Provider.of<ThemeProvider>(context,listen: false).setTheme();

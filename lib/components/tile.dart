@@ -27,14 +27,20 @@ class _TileState extends State<Tile> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _borderColor = Theme.of(context).primaryColorLight;
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    //   _borderColor = Theme.of(context).primaryColorLight;
+    // });
 
-    _animationController = AnimationController(
-        duration: Duration(milliseconds: 500), vsync: this);
+    _animationController =
+        AnimationController(duration: Duration(milliseconds: 500), vsync: this);
 
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    _borderColor = Theme.of(context).primaryColorLight;
+    super.didChangeDependencies();
   }
 
   @override
@@ -54,10 +60,12 @@ class _TileState extends State<Tile> with SingleTickerProviderStateMixin {
         _keyboardStates = notifier.tilesEntered[widget.index].keyboardStates;
         if (notifier.checkLine) {
           final delay = widget.index - (notifier.currentRow - 1) * 5;
-          Future.delayed(Duration(milliseconds: 300 * delay), (() {
-            _animationController.forward();
+          Future.delayed(Duration(milliseconds: 300 * delay), () {
+            if (mounted) {
+              _animationController.forward();
+            }
             notifier.checkLine = false;
-          }));
+          });
           _backgroundColor = Theme.of(context).primaryColorLight;
           if (_keyboardStates == KeyboardStates.correct) {
             // _borderColor = Colors.transparent;
